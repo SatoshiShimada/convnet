@@ -5,7 +5,7 @@
 #
 # TODO: add weights-decay, weights-limit
 #
-# Date: Feb 15, 2016
+# Date: Feb 16, 2016
 # Author: Satoshi SHIMADA
 
 import numpy
@@ -15,7 +15,7 @@ import neural_layer
 
 class FullyConnectedLayer \
     (neural_layer.NeuralLayer, learning_layer.LearningLayer):
-    def __init__(self, input_size, output_size, activation, learning_rate, dropout_rate, \
+    def __init__(self, input_size, output_size, activation, learning_rate, dropout_rate, momentum_rate \
             weights=None, biases=None):
         if weights == None:
             weights = numpy.random.randn(output_size, input_size)
@@ -28,6 +28,7 @@ class FullyConnectedLayer \
         self.activation    = activation
         self.learning_rate = learning_rate
         self.dropout_rate  = dropout_rate
+        self.momentum_rate = momentum_rate
         self.erase_units   = int(input_size * dropout_rate)
         self.prev_delta_weights = 0.
 
@@ -62,7 +63,7 @@ class FullyConnectedLayer \
         delta_biases  = self.learning_rate * delta
         self.weights -= delta_weights + self.prev_delta_weights
         self.biases  -= delta_biases
-        self.prev_delta_weights = delta_weights
+        self.prev_delta_weights = delta_weights * self.momentum_rate
         return next_delta
 
     def getOutput(self):
