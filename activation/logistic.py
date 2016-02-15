@@ -7,9 +7,13 @@
 # Author: Satoshi SHIMADA
 
 import numpy
-import activation_function
+import activation
 
-class LogisticFunction(activation_function.ActivationFunction):
+class LogisticFunction(activation.ActivationFunction):
+    def __init__(self):
+        self._apply = numpy.vectorize(self.apply)
+        self._diff  = numpy.vectorize(self.diff)
+
     def apply(self, value):
         return 1. / (1. + numpy.exp(-value))
 
