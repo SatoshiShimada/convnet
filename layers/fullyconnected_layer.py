@@ -15,7 +15,7 @@ import neural_layer
 
 class FullyConnectedLayer \
     (neural_layer.NeuralLayer, learning_layer.LearningLayer):
-    def __init__(self, input_size, output_size, activation, learning_rate, dropout_rate, momentum_rate \
+    def __init__(self, input_size, output_size, activation, learning_rate, dropout_rate, momentum_rate, \
             weights=None, biases=None):
         if weights == None:
             weights = numpy.random.randn(output_size, input_size)
@@ -29,24 +29,25 @@ class FullyConnectedLayer \
         self.learning_rate = learning_rate
         self.dropout_rate  = dropout_rate
         self.momentum_rate = momentum_rate
-        self.erase_units   = int(input_size * dropout_rate)
+        self.erase_units   = input_size - int(input_size * dropout_rate)
         self.prev_delta_weights = 0.
 
-    def feedForward(self, inputs, train=False):
+    def feedForward(self, _inputs, train=False):
+        inputs = _inputs[:]
         self.used_index = []
         if train:
             # dropout process
-            for i in xrange(self.erase_units):
-                # delete connection
-                index = numpy.random.randint(self.output_size)
-                while True:
-                    if index in self.used_index:
-                        index = numpy.random.randint(self.output_size)
-                    else:
-                        break
-                inputs[index] = 0.
             weights = self.weights
             biases = self.biases
+            for i in xrange(self.erase_units):
+                # delete connection
+                index = numpy.random.randint(self.input_size)
+                while True:
+                    if index in self.used_index:
+                        index = numpy.random.randint(self.input_size)
+                    else:
+                        break
+                inputs[index][0] = 0.
         else:
             weights = self.weights * self.dropout_rate 
             biases = self.biases * self.dropout_rate
@@ -55,13 +56,17 @@ class FullyConnectedLayer \
 
     def backPropagation(self, inputs, delta, prev_out=None):
         # calc delta
+        w = self.weights.copy()
+        for index in self.used_index:
+            for i in xrange(self.output_size):
+                self.weights[i][index] = 0.
         if prev_out != None:
             next_delta = numpy.dot(self.weights.transpose(), delta) * self.activation._diff(prev_out)
         else:
             next_delta = None
         delta_weights = self.learning_rate * numpy.dot(delta, inputs.transpose())
         delta_biases  = self.learning_rate * delta
-        self.weights -= delta_weights + self.prev_delta_weights
+        self.weights  = w - delta_weights + self.prev_delta_weights
         self.biases  -= delta_biases
         self.prev_delta_weights = delta_weights * self.momentum_rate
         return next_delta
