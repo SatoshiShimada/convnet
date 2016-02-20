@@ -9,6 +9,7 @@
 
 import random
 import numpy
+numpy.seterr(over='ignore')
 
 class Network(object):
     def __init__(self):
