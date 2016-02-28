@@ -77,7 +77,7 @@ class ConvolutionLayer \
                                 delta_weights[k][c][s][t] += d * inputs[c][i+s][j+t]
         # update parameters
         for k in xrange(self.filter_dim[2]):
-            self.biases -= self.learning_rate * delta_biases[k]
+            self.biases[k][0] -= self.learning_rate * delta_biases[k]
             for c in xrange(self.input_dim[2]):
                 for s in xrange(self.filter_dim[1]):
                     for t in xrange(self.filter_dim[0]):
